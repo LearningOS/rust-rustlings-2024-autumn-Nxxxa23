@@ -11,6 +11,7 @@
 
 use std::num::ParseIntError;
 use std::str::FromStr;
+use crate::ParsePersonError::NoName;
 
 #[derive(Debug, PartialEq)]
 struct Person {
@@ -31,8 +32,6 @@ enum ParsePersonError {
     ParseInt(ParseIntError),
 }
 
-// I AM NOT DONE
-
 // Steps:
 // 1. If the length of the provided string is 0, an error should be returned
 // 2. Split the given string on the commas present in it
@@ -51,7 +50,49 @@ enum ParsePersonError {
 
 impl FromStr for Person {
     type Err = ParsePersonError;
-    fn from_str(s: &str) -> Result<Person, Self::Err> {
+    fn from_str(s: &str) -> Result<Person, Self::Err>
+    {
+        if (s.is_empty())
+        {
+            return Err(ParsePersonError::Empty);
+        }
+
+        let para: Vec<&str> = s.split(',').collect::<Vec<&str>>();
+
+        if (para.len() != 2)
+        {
+            return Err(ParsePersonError::BadLen);
+        }
+
+        let mut error: Result<Person, ParsePersonError> = Err(ParsePersonError::Empty);
+
+        let mut name: String = String::new();
+        let mut age: usize = 0;
+
+        if (para[0].is_empty())
+        {
+            return Err(ParsePersonError::NoName);
+        }
+        else
+        {
+            name = para[0].to_string();
+        }
+
+        let parsing_result: Result<usize, ParseIntError> = para[1].parse::<usize>();
+
+        match parsing_result
+        {
+            Ok(v) =>
+                {
+                    age = v;
+                }
+            Err(e) =>
+                {
+                    return Err(ParsePersonError::ParseInt(e));
+                }
+        }
+
+        return Ok(Person { name: name, age: age });
     }
 }
 
